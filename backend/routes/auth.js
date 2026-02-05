@@ -198,4 +198,71 @@ router.get('/google/callback',
   }
 );
 
+// ============================================
+// Routes OAuth GitHub
+// ============================================
+
+// GET /auth/github - Initie l'authentification GitHub
+router.get('/github',
+  passport.authenticate('github', {
+    scope: ['user:email'],
+    session: false
+  })
+);
+
+// GET /auth/github/callback - Callback après authentification GitHub
+router.get('/github/callback',
+  passport.authenticate('github', {
+    session: false,
+    failureRedirect: `${process.env.FRONTEND_URL}/login?error=github_auth_failed`
+  }),
+  (req, res) => {
+    try {
+      if (!req.user) {
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=no_user`);
+      }
+
+      const token = generateToken(req.user._id);
+      res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+    } catch (error) {
+      console.error('Erreur lors du callback GitHub:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=token_generation_failed`);
+    }
+  }
+);
+
+// ============================================
+// Routes OAuth Discord
+// ============================================
+
+// GET /auth/discord - Initie l'authentification Discord
+router.get('/discord',
+  passport.authenticate('discord', {
+    scope: ['identify', 'email'],
+    session: false
+  })
+);
+
+// GET /auth/discord/callback - Callback après authentification Discord
+router.get('/discord/callback',
+  passport.authenticate('discord', {
+    session: false,
+    failureRedirect: `${process.env.FRONTEND_URL}/login?error=discord_auth_failed`
+  }),
+  (req, res) => {
+    try {
+      if (!req.user) {
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=no_user`);
+      }
+
+      const token = generateToken(req.user._id);
+      res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+    } catch (error) {
+      console.error('Erreur lors du callback Discord:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=token_generation_failed`);
+    }
+  }
+);
+
 module.exports = router;
+
